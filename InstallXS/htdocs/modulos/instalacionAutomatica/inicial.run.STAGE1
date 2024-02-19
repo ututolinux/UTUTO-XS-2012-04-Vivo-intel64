@@ -1,0 +1,207 @@
+#!/bin/bash
+# inicial.run - shell script
+#
+# Autor: Martin Andres Gomez Gimenez <mggimenez@ututo.org>
+#
+# Copyright (C) 2004 - 2007 The UTUTO Project
+# Distributed under the terms of the GNU General Public License v2 or new
+# Original version writen by Daniel Olivera <daniel@ututo.org>.
+#
+# $Header: $
+
+exec 2>&1
+exec 1>/inicial.log
+
+cd /admin
+
+# Set system language
+LANGUAGE=`cat /mnt/cdrom/etc/env.d/02locale | grep -v "#" | grep LANG= | cut -d "_" -f 1 | cut -d "\"" -f 2`
+ENV_LANG="/etc/env.d/02locale"
+sleep 0
+echo >> $ENV_LANG 
+case $LANGUAGE in 
+  de ) 
+    echo "LANG=\"de_DE.UTF-8\"" >> $ENV_LANG
+    echo "LC_ALL=\"de_DE.UTF-8\"" >> $ENV_LANG
+    ;;
+  en )
+    echo "LANG=\"en_EN.UTF-8\"" >> $ENV_LANG 
+    echo "LC_ALL=\"en_EN.UTF-8\"" >> $ENV_LANG
+    ;;
+  es )
+    echo "LANG=\"es_ES.UTF-8\"" >> $ENV_LANG 
+    echo "LC_ALL=\"es_ES.UTF-8\"" >> $ENV_LANG
+    ;;
+  es_AR )
+    echo "LANG=\"es_AR.UTF-8\"" >> $ENV_LANG
+    echo "LC_ALL=\"es_AR.UTF-8\"" >> $ENV_LANG
+    ;;
+  fr )
+    echo "LANG=\"fr_FR.UTF-8\"" >> $ENV_LANG
+    echo "LC_ALL=\"fr_FR.UTF-8\"" >> $ENV_LANG
+    ;;
+  it ) 
+    echo "LANG=\"it_IT.UTF-8\"" >> $ENV_LANG
+    echo "LC_ALL=\"it_IT.UTF-8\"" >> $ENV_LANG
+    ;;
+  pt )
+    echo "LANG=\"pt_PT.UTF-8\"" >> $ENV_LANG
+    echo "LC_ALL=\"pt_PT.UTF-8\"" >> $ENV_LANG
+    ;;
+esac
+
+KEYMAPS="/etc/conf.d/keymaps"
+
+case $LANGUAGE in 
+de )
+	sed '/KEYMAP/s/'us'/'de'/' $KEYMAPS > ouput
+	;; 
+es )  
+	sed '/KEYMAP/s/'us'/'es'/' $KEYMAPS > ouput
+	;;  
+fr )  
+	sed '/KEYMAP/s/'us'/'fr'/' $KEYMAPS > ouput
+	;; 
+it )  
+	sed '/KEYMAP/s/'us'/'it'/' $KEYMAPS > ouput
+	;; 
+pt )  
+	sed '/KEYMAP/s/'us'/'pt'/' $KEYMAPS > ouput
+	;;
+esac
+mv ouput $KEYMAPS
+
+env-update
+#sed -i "s/return 0/env-update ; return 0/" /etc/conf.d/local
+
+# Instala lilo
+lilo -v
+
+
+#/admin/agregar-usuario-auto
+
+#rm -f /etc/localtime
+#ln -sf /usr/share/zoneinfo/$ZONAHORARIA /etc/localtime
+#echo "TIMEZONE=\"${ZONAHORARIA}\"" >> /etc/conf.d/clock
+
+
+# Configurar Splash de UTUTO XS
+# if [ -e /etc/splash ]; then
+#   sed '/SPLASH_VERBOSE_ON_ERRORS/s/'yes'/'no'/' /etc/conf.d/splash > ouput
+#   mv ouput /etc/conf.d/splash
+#   echo "SPLASH_THEME=\"ututo\"" >> /etc/conf.d/splash
+#   echo "SPLASH_FONT=\"luxisri.ttf\"" >> /etc/conf.d/splash
+#   ln -s /etc/splash/ututo /etc/splash/default
+# fi
+
+# rm -f /inicial.run
+
+################################################################################
+# CODIGO TEMPORAL PARA CORRECCION DE PROBLEMAS CONOCIDOS DEL SISTEMA
+#
+# cd /admin
+# cp /admin/shutdown.sh /etc/init.d 2>/dev/tty12
+# cp /admin/pluggerrc /etc/pluggerrc 2>/dev/tty12
+# cp /admin/net-setup /usr/bin 2>/dev/tty12
+# echo "snd_wavefront" >> /etc/hotplug/blacklist 2>/dev/tty12
+# echo "snd_cs4232" >> /etc/hotplug/blacklist 2>/dev/tty12
+# echo "shpchp" >> /etc/hotplug/blacklist 2>/dev/tty12
+# rm -f /indices.txt 2>/dev/tty12
+# rm -f /paquetes-base.txt 2>/dev/tty12
+# rm -f /paquetes-escritorio.txt 2>/dev/tty12
+# cp /admin/clock /etc/conf.d/clock 2>/dev/tty12
+chgrp wheel /bin/su 2>/dev/tty12
+chmod 4750 /bin/su 2>/dev/tty12
+# /admin/seguridad-usuarios 2>/dev/tty12
+touch /etc/mtab
+
+# Cambiar permisos en /etc/sudoers
+#if [ -e /etc/sudoers.xs ]; then
+#  mv /etc/sudoers.xs /etc/sudoers
+#fi
+#chown root:root /etc/sudoers
+#chmod 0440 /etc/sudoers
+
+#chown root:root /etc/shadow
+#chmod 0700 /etc/shadow
+#chown root:root /etc/passwd
+#chmod 0744 /etc/passwd
+
+#chown -R ututo:ututo /home/ututo
+
+
+
+# Configurar lenguaje en KDE
+# source /admin/system-config/other/kde_locale_config.sh
+
+# Configurar servicio deteccion de particiones
+#cp /admin/detect-new-partitions /etc/init.d/
+#chown root:root /etc/init.d/detect-new-partitions
+#chmod 755 /etc/init.d/detect-new-partitions
+#rc-update del detect-new-partitions default
+
+# Configurar versión de UTUTO XS
+/etc/cron.daily/ututo-version.cron
+/etc/cron.daily/ututo-rc.cron
+/sbin/depscan.sh -f 2>/dev/tty12
+
+# Reglas antiguas de de UDEV para PCMCIA
+rm -rf /etc/udev/rules.d/60-pcmcia.*
+rm -rf /etc/udev/rules.d/70-persistent-net.rules
+
+# Corrección de actualizacion de scripts de inicio
+# sed 's/depscan.sh -u/depscan.sh -f/g' /sbin/splash-functions.sh > /sbin/ouput
+# mv /sbin/ouput /sbin/splash-functions.sh
+
+# Webmin
+# if [ -x /usr/libexec/webmin/miniserv.pl ]; then
+#   cp /admin.bak/webmin/* /etc/webmin
+# fi
+
+# Guidedog
+# if [ -x /usr/bin/guardog ]; then
+#   cp /admin.bak/firewall/rc.* /etc
+#   echo "Set the rules for UTUTO XS default firewall" >> /etc/conf.d/local.start
+#   echo "/etc/rc.firewall" >> /etc/conf.d/local.start
+#   echo "/etc/rc.guidedog" >> /etc/conf.d/local.start
+#   echo "" >> /etc/conf.d/local.start
+# fi
+
+# Acciones a ejecutar para configurar correctamente el kernel
+
+# Cargar módulos de Virtualbox y Qemu
+# echo "vboxdrv" >> /etc/modules.autoload.d/kernel-2.6 2>/dev/tty12
+# echo "kqemu" >> /etc/modules.autoload.d/kernel-2.6 2>/dev/tty12
+
+# Corrección de permisos para el dispositivo de Virtualbox & Qemu
+# echo "#Grant vboxusers access to /dev/vboxdrv" >> /etc/conf.d/local.start
+# echo "chown root:vboxusers /dev/vboxdrv" >> /etc/conf.d/local.start
+# echo "" >> /etc/conf.d/local.start
+# echo "#Grant vboxusers access to /dev/vboxdrv and /dev/kqemu" >> /etc/conf.d/local.start
+# echo "chown root:vboxusers /dev/kqemu" >> /etc/conf.d/local.start
+# echo "" >> /etc/conf.d/local.start
+
+#rm -rf /var/tmp/*
+#rm -rf /home/ututo/.mozilla
+#rm -rf /home/ututo/.kde3.5/socket-*
+#rm -rf /home/ututo/.kde3.5/tmp-*
+#rm -rf /home/ututo/.kde3.5/cache-*
+#rm -rf /home/ututo/.dbus/*
+#rm -rf /media/*
+
+#rc-update del cpufreqd
+#rc-update del cpufrequtils
+
+# Verificación de enlace simbólico al módulo GLX 
+#if [ ! -L /usr/lib/xorg/modules/extensions/libglx.so ]; then
+#  ln -sf /usr/X11R6/lib/opengl/xorg-x11/extensions/libglx.so \
+#  /usr/lib/xorg/modules/extensions/
+#fi
+
+# Verificación de existencia de /var/gdm
+#[[ ! -d /var/gdm ]] && mkdir /var/gdm
+
+# Corregir configuracion xorg
+# sed -i 's/radeon/vesa/g' /etc/X11/xorg.conf
+
+rm -f /inicial.run

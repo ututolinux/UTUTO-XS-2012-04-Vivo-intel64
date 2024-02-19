@@ -1,0 +1,70 @@
+Como crear un XS personalizado.
+(todo el procedimiento debe ser ejecutado como superusuario root)
+
+Cree un directorio llamado "XS"
+Dentro cree 2 directorios llamados "cdimage", "image"
+
+Copie el contenido completo del disco XS Vivo! en "cdimage" con el comando
+"cp -a" para mantener los atributos de los archivos
+Copie los scripts que comienzan con 0, 1 y 2 en el direcorio XS
+
+Monte la imagen (archivo image.squashfs) squashfs del filesystem de XS Vivo! 
+mediante el siguiente comando
+
+mkdir /mnt/XSimage
+mount -t squahfs -o loop [ruta_a_image.squashfs] /mnt/XSimage
+
+Copie todo el contenido de /mnt/XSimage al directorio "image" con
+el comando "cp -a" para mantener los atributos
+
+Cuando termine desmonte la imagen squashfs (umount /mnt/XSimage)
+Remueva el directorio de montaje (rm -rf /mnt/XSimage)
+
+Ahora tendra en "cdimage" una copia exacta del DVD y en "image" una copia
+exacta del filesystem de XS Vivo! y del sistema si lo instalara en un ordenador mediante
+el instalador InstallXS contenido en el XS Vivo!
+
+Para ingresar como supersusuario en la imagen del filesystem debe ejecutar dentro
+del directorio que ha creado llamado XS el siguiente comando
+
+./0.make-chroot-upgrade.sh
+
+Con esto quedara como superusuario en modo consola dentro del filesystem
+Aca puede proceder como si fuese un sistema funciona ejecutando los mismo comandos
+que ejecutaria en una consola en un XS funcional.
+
+para salir ejecute "exit"
+
+NOTA sobre el kernel: Si desea cambiar el kernel de inicio del sistema XS Vivo!
+ debe reemplazarlo en XS/isolinux tambien
+El kernel debe ser renombrado a "kernel" y el initramfs a initramfs.igz
+
+Tambien debe poner los "modules" en el directorio image/lib/modules acordes
+a la version del kernel que esta reemplazando.
+
+Tambien debera copiar los archivos del kernel (kernel, initramfs y System.map) en 
+image/boot para que sean instalados si ejecuta el instalador InstallXS.
+
+
+Si desea recrear la imagen del filesystem en formato comprimido ejecute.
+
+./1.make-squash-vivo.sh
+
+Este script indicara varias sugerencias y modificaciones que debe realizar antes
+de crear el sistema de archivos comprimido con squashfs.
+Se sugiere que siga al detalladamente estas indicaciones
+
+Y para crear el archivo imagen de DVD iso9660 ejecute
+
+./2.make-iso-Cambiar-Version.sh
+
+
+
+NOTA: este proceso a pesar que esta simplifado requiere tener algo de conocimientos
+de sistemas operativos y su estructura.
+
+NOTA2: el comando mksquahfs necesita la version 4.2 del paquete squashfs-tools
+compilado con soporte para xz. Este es el algoritmo de compresion usado para
+crear el disco Vivo! instalable de UTUTO XS
+
+El equipo de desarrollo de UTUTO XS

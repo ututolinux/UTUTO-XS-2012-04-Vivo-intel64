@@ -1,0 +1,10 @@
+default 0
+timeout 30
+chainloader +1
+boot
+splashimage=(hdBUSGRUB,HDDGRUB)/boot/grub/grub-ututo.xpm.gz
+
+title x32-30150
+root (hdBUSGRUB,HDDGRUB)
+kernel /boot/kernel-x86-3.0.15.0-XS root=/dev/ram0 init=/linuxrc ramdisk_size=8192 video=vesafb fbcondecor=silent,theme:none CONSOLE=/dev/console quiet udev doscsi elevator=cfq real_root=/dev/DEVICEROOT tuxonice_resume=swap:/dev/DEVICESWAP resume=swap:/dev/DEVICESWAP
+initrd /boot/initramfs-x86-3.0.15.0-XS

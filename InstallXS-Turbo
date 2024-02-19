@@ -1,0 +1,22 @@
+#!/bin/bash
+# Turno install for UTUTO XS
+
+if [ "$1" = "" ];then
+    echo "-----------------------------------------------------------"
+    echo "Usage: InstallXS-Turbo [mount_point]"
+    echo " "
+    echo "or"
+    echo " "
+    echo "Usage: InstallXS-Turbo [mount_point] [directory_to_install]"
+    echo "-----------------------------------------------------------"
+    exit
+fi
+if [ ! -e image.squashfs ];then
+    echo "------------------------------------------------------------"
+    echo "file image.squashfs not found!"
+    echo "------------------------------------------------------------"
+    exit
+fi
+echo "----------------------------------------------------------------"
+echo "Installing...$2 from UTUTO XS filesystem image in $1"
+unsquashfs -f -d $1 image.squashfs $2

@@ -1,0 +1,70 @@
+#!/bin/bash
+# inicial.run - shell script
+#
+# Autor: Martin Andres Gomez Gimenez <mggimenez@ututo.org>
+#
+# Copyright (C) 2004 - 2007 The UTUTO Project
+# Distributed under the terms of the GNU General Public License v2 or new
+# Original version writen by Daniel Olivera <daniel@ututo.org>.
+#
+# $Header: $
+
+exec 2>&1
+exec 1>/inicial.log
+
+
+# Instala lilo
+lilo -v
+
+ln -sf /usr/share/zoneinfo/America/Buenos_Aires /etc/localtime
+
+rm -f /etc/localtime
+ln -sf /usr/share/zoneinfo/$ZONAHORARIA /etc/localtime
+#echo "TIMEZONE=\"${ZONAHORARIA}\"" >> /etc/conf.d/clock
+
+# Configurar Splash de UTUTO XS
+# if [ -e /etc/splash ]; then
+#   sed '/SPLASH_VERBOSE_ON_ERRORS/s/'yes'/'no'/' /etc/conf.d/splash > ouput
+#   mv ouput /etc/conf.d/splash
+#   echo "SPLASH_THEME=\"ututo\"" >> /etc/conf.d/splash
+#   echo "SPLASH_FONT=\"luxisri.ttf\"" >> /etc/conf.d/splash
+#   ln -s /etc/splash/ututo /etc/splash/default
+# fi
+
+# rm -f /inicial.run
+
+################################################################################
+# CODIGO TEMPORAL PARA CORRECCION DE PROBLEMAS CONOCIDOS DEL SISTEMA
+#
+## fill user directories
+fixuser ututo
+fixuser root
+#mv /etc/passwd- /etc/passwd
+chmod a+r /etc/passwd
+#mv /etc/shadow- /etc/shadow
+chown root:root /etc/shadow
+chmod 0700 /etc/shadow
+chown root:root /etc/passwd
+chmod 0744 /etc/passwd
+
+chown -R ututo:ututo /home/ututo
+
+chgrp wheel /bin/su 2>/dev/tty12
+chmod 4750 /bin/su 2>/dev/tty12
+
+chmod 0777 /tmp
+
+touch /etc/mtab
+env-update
+sed -i "s/return 0/env-update ; return 0/" /etc/conf.d/local
+
+sed -i '/BusID.*PCI/d' /etc/X11/xorg.conf
+sed -i 's/"1024x768"//' /etc/X11/xorg.conf
+
+# Reglas antiguas de de UDEV para PCMCIA
+rm -rf /etc/udev/rules.d/60-pcmcia.*
+rm -rf /etc/udev/rules.d/70-persistent-net.rules
+#rc-update del detect-new-partitions default
+#rc-update del detect-new-partitions boot
+
+rm -f /inicial.run
